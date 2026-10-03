@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="To Do">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#2f6f5e">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
 <title>To Do List</title>
 <style>
 :root{--bg:#f3f1ec;--card:#fffdf9;--ink:#1f2a37;--mute:#7b8591;--line:#e1ddd3;--accent:#2f6f5e;--accent-ink:#fff;--miss:#d64545;
@@ -201,28 +207,13 @@ function renderTage(box){
   box.className="cols";
 }
  
-function routineStreak(t,type){
-  var n=0;
-  for(var o=0;o>-120;o--){
-    if((isWE(dateOff(o))?"we":"wk")!==type)continue;
-    var it=load(keyFor(o)).filter(function(x){return x.r&&x.t===t})[0],dn=!!(it&&it.d);
-    if(o===0&&!dn)continue;
-    if(dn)n++;else break;
-  }
-  return n;
-}
 function renderCal(box){
-  var R=routines(),opts=[["all","Alle"]];
-  if(R.wk.length+R.we.length)opts.push(["rou","Routinen"]);
-  ["wk","we"].forEach(function(ty){R[ty].forEach(function(t){
-    var dup=R[ty==="wk"?"we":"wk"].indexOf(t)>-1;
-    opts.push([ty+":"+t,t+(dup?(ty==="wk"?" (Mo–Fr)":" (Sa/So)"):"")]);
-  })});
+  var opts=[["all","Alle"],["day","Tage"],["rou","Routinen"]];
   if(!opts.some(function(o){return o[0]===calFilter}))calFilter="all";
   function filt(l){
-    if(calFilter==="all")return l;
     if(calFilter==="rou")return l.filter(function(o){return o.r});
-    var t=calFilter.slice(3);return l.filter(function(o){return o.r&&o.t===t});
+    if(calFilter==="day")return l.filter(function(o){return !o.r});
+    return l;
   }
   var now=new Date(),base=new Date(now.getFullYear(),now.getMonth()+calOff,1,12);
   var y=base.getFullYear(),m=base.getMonth(),days=new Date(y,m+1,0).getDate();
@@ -233,7 +224,7 @@ function renderCal(box){
   pv.onclick=function(){calOff--;render()};nx.onclick=function(){calOff++;render()};
   h.appendChild(pv);h.appendChild(el("h2",null,base.toLocaleDateString("de-DE",{month:"long",year:"numeric"})));h.appendChild(nx);
   p.appendChild(h);
-  if(opts.length>1){
+  if(true){
     var ch=el("div","chips");
     opts.forEach(function(o){var b=el("button",null,o[1]);b.setAttribute("aria-pressed",calFilter===o[0]);b.onclick=function(){calFilter=o[0];render()};ch.appendChild(b)});
     p.appendChild(ch);
@@ -257,10 +248,6 @@ function renderCal(box){
   p.appendChild(g);
   var lg=el("div","legend");lg.appendChild(el("span",null,"0 %"));lg.appendChild(el("i"));lg.appendChild(el("span",null,"100 % erledigt"));
   p.appendChild(lg);
-  if(calFilter.indexOf(":")>-1){
-    var sn=routineStreak(calFilter.slice(3),calFilter.slice(0,2));
-    p.appendChild(el("div","fnote","Serie: "+sn+(sn===1?" Tag":" Tage")+" am Stück"));
-  }
   box.appendChild(p);
   if(selDay){
     var q=el("div","panel"),sl=load(selDay),past=selDay<todayKey;
@@ -340,6 +327,7 @@ function checkDay(){if(keyFor(0)!==baseKey)render()}
 document.addEventListener("visibilitychange",function(){if(!document.hidden)checkDay()});
 setInterval(checkDay,60000);
 render();
+if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}
 </script>
 </body>
 </html>
